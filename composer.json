@@ -1,0 +1,19 @@
+{
+    "name": "firevel/sortable",
+    "description": "A simple trait to make your Laravel Eloquent models sortable with ease.",
+    "keywords": ["laravel", "firevel", "trait", "sortable"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Michael Slowik",
+            "email": "michael.slowik@firevel.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Firevel\\Sortable\\": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
