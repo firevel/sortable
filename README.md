@@ -19,11 +19,16 @@ composer require firevel/sortable
 ## Example:
 
 ```php
-use Firevel\Sortable;
+use Firevel\Sortable\Sortable;
 
 class User extends Model {
     use Sortable;
 
+    /**
+     * Fields allowed for sorting.
+     *
+     * @var array
+     */
     protected $sortable = ['id', 'name', 'email'];
 }
 ```
