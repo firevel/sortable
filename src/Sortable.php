@@ -20,6 +20,10 @@ trait Sortable
      */
     public function scopeSort($query, array $sortingAttributes)
     {
+        if (empty($this->sortable)) {
+            return $query;
+        }
+
         $sortable = $this->sortable;
         foreach ($sortable as $key) {
             $sortable[] = '-' . $key; 
