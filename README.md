@@ -1,6 +1,6 @@
 # Laravel Sortable
 
-A simple trait to make your Laravel Eloquent models sortable with ease. 
+A simple trait to make your Laravel Eloquent models sortable with ease. Designed for API usage where you can pass sort parameters directly from query strings (e.g., `/users?sort=-id`). 
 
 ## Installation
 
@@ -30,6 +30,13 @@ class User extends Model {
      * @var array
      */
     protected $sortable = ['id', 'name', 'email'];
+
+    /**
+     * Default sorting when no sort parameter is provided (optional).
+     *
+     * @var array|null
+     */
+    protected $defaultSort = ['-id'];
 }
 ```
 
@@ -52,3 +59,80 @@ User::sort(['-id'])->get();
 ```
 
 The `-` sign before the field name indicates descending order.
+
+### Multiple Columns:
+You can sort by multiple columns at once. The sorting is applied in the order specified:
+
+```php
+User::sort(['name', '-id'])->get();
+```
+
+This will sort by `name` ascending, then by `id` descending.
+
+### API Usage:
+This trait is particularly useful for API endpoints where you receive sort parameters from query strings:
+
+```php
+// Example: GET /users?sort=-id
+public function index(Request $request)
+{
+    $sort = $request->input('sort');
+    $sortArray = $sort ? explode(',', $sort) : [];
+
+    return User::sort($sortArray)->get();
+}
+
+// Supports multiple sort parameters:
+// GET /users?sort=name,-id
+```
+
+## Additional Features
+
+### Default Sorting
+You can define a default sort order that will be applied when no sort parameters are provided:
+
+```php
+class User extends Model {
+    use Sortable;
+
+    protected $sortable = ['id', 'name', 'email', 'created_at'];
+    protected $defaultSort = ['-created_at'];  // Sort by newest first by default
+}
+
+// When called with no parameters, uses default sort
+User::sort([])->get();  // Returns users sorted by created_at DESC
+```
+
+### Check if Field is Sortable
+You can check if a specific field is sortable using the `isSortable()` method:
+
+```php
+$user = new User();
+
+if ($user->isSortable('name')) {
+    // Field is sortable
+}
+
+if ($user->isSortable('-id')) {
+    // Also works with descending prefix
+}
+```
+
+This is useful for validation in API controllers:
+
+```php
+public function index(Request $request)
+{
+    $sort = $request->input('sort');
+    $sortArray = $sort ? explode(',', $sort) : [];
+
+    $user = new User();
+    foreach ($sortArray as $field) {
+        if (!$user->isSortable($field)) {
+            return response()->json(['error' => "Invalid sort field: {$field}"], 400);
+        }
+    }
+
+    return User::sort($sortArray)->get();
+}
+```
