@@ -15,5 +15,12 @@
             "Firevel\\Sortable\\": "src/"
         }
     },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Firevel\\Sortable\\SortableServiceProvider"
+            ]
+        }
+    },
     "minimum-stability": "dev"
 }

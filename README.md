@@ -118,21 +118,64 @@ if ($user->isSortable('-id')) {
 }
 ```
 
-This is useful for validation in API controllers:
+### Validation Rule for Form Requests
+
+The package provides two ways to validate sort parameters:
+
+#### String-based validation:
 
 ```php
-public function index(Request $request)
+class ListUsersRequest extends FormRequest
+{
+    public function rules()
+    {
+        return [
+            'sort' => ['nullable', 'string', 'sort_fields:App\Models\User'],
+        ];
+    }
+}
+```
+
+#### Object-based validation (provides more detailed error messages):
+
+```php
+use Firevel\Sortable\SortField;
+use App\Models\User;
+
+class ListUsersRequest extends FormRequest
+{
+    public function rules()
+    {
+        return [
+            'sort' => ['nullable', 'string', new SortField(User::class)],
+        ];
+    }
+}
+```
+
+Both approaches work with string and array inputs:
+
+```php
+// String input (e.g., from query string ?sort=name,-id)
+'sort' => ['nullable', 'string', 'sort_fields:App\Models\User']
+
+// Array input
+'sort' => ['nullable', 'array', 'sort_fields:App\Models\User']
+```
+
+Example usage in a controller:
+
+```php
+public function index(ListUsersRequest $request)
 {
     $sort = $request->input('sort');
-    $sortArray = $sort ? explode(',', $sort) : [];
-
-    $user = new User();
-    foreach ($sortArray as $field) {
-        if (!$user->isSortable($field)) {
-            return response()->json(['error' => "Invalid sort field: {$field}"], 400);
-        }
-    }
+    $sortArray = is_array($sort) ? $sort : explode(',', $sort);
 
     return User::sort($sortArray)->get();
 }
 ```
+
+The validation rule will automatically:
+- Check if each field is in the model's `$sortable` array
+- Handle both ascending (`name`) and descending (`-name`) formats
+- Provide clear error messages for invalid fields
