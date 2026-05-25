@@ -30,11 +30,12 @@ trait Sortable
         foreach ($sortable as $key) {
             $sortable[] = '-' . $key;
         }
-        $sortingAttributes = array_intersect($sortable, $sortingAttributes);
+        // Keep only allowlisted fields, preserving the requested order.
+        $sortingAttributes = array_intersect($sortingAttributes, $sortable);
 
         // Apply default sorting if no valid sorting attributes provided
         if (empty($sortingAttributes) && !empty($this->defaultSort)) {
-            $sortingAttributes = array_intersect($sortable, SortFields::parse($this->defaultSort));
+            $sortingAttributes = array_intersect(SortFields::parse($this->defaultSort), $sortable);
         }
 
         if (empty($sortingAttributes)) {
