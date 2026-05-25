@@ -2,14 +2,15 @@
 
 namespace Firevel\Sortable;
 
-use Illuminate\Contracts\Validation\Rule;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
  * Validation rule to check if sort fields are valid for a given model.
  *
  * @package Firevel\Sortable
  */
-class SortField implements Rule
+class SortField implements ValidationRule
 {
     /**
      * The model class to validate against.
@@ -17,13 +18,6 @@ class SortField implements Rule
      * @var string
      */
     protected $modelClass;
-
-    /**
-     * Invalid fields found during validation.
-     *
-     * @var array
-     */
-    protected $invalidFields = [];
 
     /**
      * Create a new rule instance.
@@ -37,50 +31,48 @@ class SortField implements Rule
     }
 
     /**
-     * Determine if the validation rule passes.
+     * Run the validation rule.
      *
      * @param string $attribute
      * @param mixed $value
-     * @return bool
+     * @param \Closure $fail
+     * @return void
      */
-    public function passes($attribute, $value)
+    public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!class_exists($this->modelClass)) {
-            return false;
+            $fail("The :attribute field cannot be validated against {$this->modelClass}.");
+            return;
         }
 
         $model = new $this->modelClass;
 
         if (!method_exists($model, 'isSortable')) {
-            return false;
+            $fail("The :attribute field cannot be validated against {$this->modelClass}.");
+            return;
         }
 
-        $this->invalidFields = [];
+        $invalidFields = [];
 
         foreach (SortFields::parse($value) as $field) {
             if (!$model->isSortable($field)) {
-                $this->invalidFields[] = $field;
+                $invalidFields[] = $field;
             }
         }
 
-        return empty($this->invalidFields);
-    }
+        if (empty($invalidFields)) {
+            return;
+        }
 
-    /**
-     * Get the validation error message.
-     *
-     * @return string
-     */
-    public function message()
-    {
-        if (count($this->invalidFields) === 1) {
-            return "The sort field '{$this->invalidFields[0]}' is not allowed.";
+        if (count($invalidFields) === 1) {
+            $fail("The sort field '{$invalidFields[0]}' is not allowed.");
+            return;
         }
 
         $fields = implode(', ', array_map(function ($field) {
             return "'{$field}'";
-        }, $this->invalidFields));
+        }, $invalidFields));
 
-        return "The sort fields {$fields} are not allowed.";
+        $fail("The sort fields {$fields} are not allowed.");
     }
 }
