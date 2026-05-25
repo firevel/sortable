@@ -70,21 +70,24 @@ User::sort(['name', '-id'])->get();
 This will sort by `name` ascending, then by `id` descending.
 
 ### API Usage:
-This trait is particularly useful for API endpoints where you receive sort parameters from query strings:
+This trait is particularly useful for API endpoints where you receive sort parameters from query strings. You can pass the raw JSON:API style string straight to `sort()` — no need to explode it yourself:
 
 ```php
-// Example: GET /users?sort=-id
+// Example: GET /users?sort=name,-id
 public function index(Request $request)
 {
-    $sort = $request->input('sort');
-    $sortArray = $sort ? explode(',', $sort) : [];
-
-    return User::sort($sortArray)->get();
+    return User::sort($request->input('sort'))->get();
 }
-
-// Supports multiple sort parameters:
-// GET /users?sort=name,-id
 ```
+
+`sort()` accepts either a comma-separated string (`"name,-id"`) or an array (`['name', '-id']`), so both of these are equivalent:
+
+```php
+User::sort('name,-id')->get();
+User::sort(['name', '-id'])->get();
+```
+
+Whitespace around fields is trimmed, so `"name, -id"` works too.
 
 ## Additional Features
 
@@ -168,10 +171,7 @@ Example usage in a controller:
 ```php
 public function index(ListUsersRequest $request)
 {
-    $sort = $request->input('sort');
-    $sortArray = is_array($sort) ? $sort : explode(',', $sort);
-
-    return User::sort($sortArray)->get();
+    return User::sort($request->input('sort'))->get();
 }
 ```
 

@@ -36,16 +36,7 @@ class SortableServiceProvider extends ServiceProvider
                 return false;
             }
 
-            // Convert string to array if needed (e.g., "name,-id" -> ["name", "-id"])
-            $fields = is_array($value) ? $value : explode(',', $value);
-
-            foreach ($fields as $field) {
-                $field = trim($field);
-
-                if (empty($field)) {
-                    continue;
-                }
-
+            foreach (SortFields::parse($value) as $field) {
                 if (!$model->isSortable($field)) {
                     return false;
                 }

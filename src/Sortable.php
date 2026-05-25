@@ -15,14 +15,16 @@ trait Sortable
      * Scope a query to sort results.
      *
      * @param Builder $query
-     * @param array $sortingAttributes
+     * @param string|array $sortingAttributes JSON:API style string ("name,-id") or array.
      * @return Builder
      */
-    public function scopeSort($query, array $sortingAttributes)
+    public function scopeSort($query, $sortingAttributes)
     {
         if (empty($this->sortable)) {
             return $query;
         }
+
+        $sortingAttributes = SortFields::parse($sortingAttributes);
 
         $sortable = $this->sortable;
         foreach ($sortable as $key) {
@@ -32,7 +34,7 @@ trait Sortable
 
         // Apply default sorting if no valid sorting attributes provided
         if (empty($sortingAttributes) && !empty($this->defaultSort)) {
-            $sortingAttributes = array_intersect($sortable, $this->defaultSort);
+            $sortingAttributes = array_intersect($sortable, SortFields::parse($this->defaultSort));
         }
 
         if (empty($sortingAttributes)) {
