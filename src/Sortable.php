@@ -2,8 +2,6 @@
 
 namespace Firevel\Sortable;
 
-use Illuminate\Support\Str;
-
 /**
  * Trait Sortable
  *
@@ -14,9 +12,9 @@ trait Sortable
     /**
      * Scope a query to sort results.
      *
-     * @param Builder $query
+     * @param \Illuminate\Database\Eloquent\Builder $query
      * @param string|array $sortingAttributes JSON:API style string ("name,-id") or array.
-     * @return Builder
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function scopeSort($query, $sortingAttributes)
     {
@@ -42,11 +40,13 @@ trait Sortable
             return $query;
         }
 
-        foreach ($sortingAttributes as $attribute) {
+        // The column already survived the allowlist check, so it is a
+        // developer-declared, trusted name and is used verbatim.
+        foreach (array_unique($sortingAttributes) as $attribute) {
             $sortingDirection = strpos($attribute, '-') === 0 ? 'desc' : 'asc';
             $columnName = ltrim($attribute, '-');
 
-            $query->orderBy(Str::slug($columnName, '_'), $sortingDirection);
+            $query->orderBy($columnName, $sortingDirection);
         }
 
         return $query;
