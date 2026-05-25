@@ -33,8 +33,9 @@ class User extends Model {
 
     /**
      * Default sorting when no sort parameter is provided (optional).
+     * May be an array (['-id']) or a string ('-id').
      *
-     * @var array|null
+     * @var array|string|null
      */
     protected $defaultSort = ['-id'];
 }
@@ -88,6 +89,8 @@ User::sort(['name', '-id'])->get();
 ```
 
 Whitespace around fields is trimmed, so `"name, -id"` works too.
+
+> **Note:** `sort()` only applies fields listed in the model's `$sortable` allowlist. Any field that isn't allowed is silently ignored rather than raising an error — so an untrusted `?sort=` value can never order by an unexpected column. If no valid fields remain, the model's `$defaultSort` (if any) is applied. To reject invalid input with a validation error instead, use the validation rule below.
 
 ## Additional Features
 
