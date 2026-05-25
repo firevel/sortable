@@ -2,6 +2,7 @@
 
 namespace Firevel\Sortable\Tests\Feature;
 
+use Firevel\Sortable\Tests\Models\CamelCaseSortable;
 use Firevel\Sortable\Tests\Models\NonSortable;
 use Firevel\Sortable\Tests\Models\Post;
 use Firevel\Sortable\Tests\Models\PostWithStringDefault;
@@ -78,6 +79,22 @@ class SortScopeTest extends TestCase
         $query = NonSortable::sort('title,-id');
 
         $this->assertSame([], $this->orders($query));
+    }
+
+    public function test_it_uses_field_names_verbatim_without_slugging(): void
+    {
+        // Regression: Str::slug() used to turn "createdAt" into "createdat"
+        // and "users.name" into "usersname".
+        $query = CamelCaseSortable::sort('createdAt,-users.name');
+
+        $this->assertSame([['createdAt', 'asc'], ['users.name', 'desc']], $this->orders($query));
+    }
+
+    public function test_it_does_not_emit_duplicate_order_clauses(): void
+    {
+        $query = Post::sort('title,title,-title');
+
+        $this->assertSame([['title', 'asc'], ['title', 'desc']], $this->orders($query));
     }
 
     public function test_it_orders_real_rows_in_the_requested_priority(): void
