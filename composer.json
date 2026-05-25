@@ -10,10 +10,22 @@
             "email": "michael.slowik@firevel.com"
         }
     ],
+    "require-dev": {
+        "orchestra/testbench": "^9.0 || ^10.0",
+        "phpunit/phpunit": "^10.5 || ^11.0"
+    },
     "autoload": {
         "psr-4": {
             "Firevel\\Sortable\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Firevel\\Sortable\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
     },
     "extra": {
         "laravel": {
@@ -22,5 +34,6 @@
             ]
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
